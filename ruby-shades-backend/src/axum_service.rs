@@ -14,6 +14,7 @@ use axum::{
     response::{IntoResponse, Response},
     routing::{any, get, get_service},
 };
+use ffmpeg_next as ffmpeg;
 use futures_util::{
     SinkExt, StreamExt,
     stream::{SplitSink, SplitStream},
@@ -28,6 +29,7 @@ use tokio::{
 };
 use tower_http::services::ServeDir;
 use uuid::Uuid;
+
 type Clients = Lazy<Arc<Mutex<HashMap<String, Vec<UnboundedSender<Message>>>>>>;
 static CLIENTS: Clients = Lazy::new(|| Arc::new(Mutex::new(HashMap::new())));
 #[derive(Debug, Deserialize, Serialize)]
@@ -51,11 +53,11 @@ static BITRATE_QUALITY_MAP: &[(&str, u32)] = &[
 ];
 pub async fn initialize() {
     let app = Router::new()
-        .route("/", get(|| async { "Hello, world" }))
+        .route("/", get(|| async { "Ruby Shades Backend" }))
         .nest_service("/videos", get_service(ServeDir::new("/static/videos")))
         .route("/watch", get(handle_watch))
-        .route("websocket_metadata", any(ws_handler));
-
+        .route("/websocket_metadata", any(ws_handler));
+    init_ffmpeg();
     let config: Config = read_config();
     let listener = tokio::net::TcpListener::bind(format!("{}:{}", config.address, config.port))
         .await
@@ -70,6 +72,10 @@ fn get_quality(quality: &str) -> Option<u32> {
         }
     }
     None
+}
+fn init_ffmpeg() -> anyhow::Result<()> {
+    ffmpeg::init()?;
+    Ok(())
 }
 pub async fn convert_video_to_hls(
     input_path: &str,
@@ -163,23 +169,20 @@ async fn ws_handler(ws: WebSocketUpgrade) -> impl IntoResponse {
 async fn handle_socket(socket: WebSocket) {
     let (sender, receiver) = socket.split();
     let (tx, rx) = tokio::sync::mpsc::unbounded_channel::<Message>();
+    let uuid_new = Uuid::new_v4();
+    CLIENTS
+        .lock()
+        .unwrap()
+        .entry(uuid_new.to_string())
+        .or_default()
+        .push(tx.clone());
     tokio::spawn(write(sender, rx));
-    tokio::spawn(read(receiver, tx));
+    tokio::spawn(read(receiver, tx, uuid_new));
 }
-async fn read(mut receiver: SplitStream<WebSocket>, tx: UnboundedSender<Message>) {
-    while let Some(Ok(Message::Text(text))) = receiver.next().await {
-        if let Ok(val) = serde_json::from_str::<serde_json::Value>(&text) {
-            if val["type"] == "subscribe" {
-                if let Some(uuid) = val["uuid"].as_str() {
-                    CLIENTS
-                        .lock()
-                        .unwrap()
-                        .entry(uuid.to_string())
-                        .or_default()
-                        .push(tx.clone());
-                    break;
-                }
-            }
+async fn read(mut receiver: SplitStream<WebSocket>, tx: UnboundedSender<Message>, uuid: Uuid) {
+    while let Some(Ok(Message::Close(text))) = receiver.next().await {
+        if CLIENTS.lock().unwrap().contains_key(&uuid.to_string()) {
+            CLIENTS.lock().unwrap().remove(&uuid.to_string());
         }
     }
 }
