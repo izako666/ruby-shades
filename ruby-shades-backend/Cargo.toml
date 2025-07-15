@@ -6,7 +6,6 @@ edition = "2024"
 [dependencies]
 anyhow = "1.0.98"
 axum = { version = "0.8.4", features = ["ws"] }
-ffmpeg-next = "7.1.0"
 futures-util = "0.3.31"
 once_cell = "1.21.3"
 serde = { version = "1.0.219", features = ["derive"] }

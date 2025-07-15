@@ -13,7 +13,7 @@ pub struct PathObject {
     nested_paths: Vec<PathObject>,
 }
 
-static PATH_OBJECT: Lazy<Mutex<Option<PathObject>>> = Lazy::new(|| Mutex::new(None));
+pub static PATH_OBJECT: Lazy<Mutex<Option<PathObject>>> = Lazy::new(|| Mutex::new(None));
 
 pub fn initialize(source_dir: &str) {
     let path = Path::new(source_dir);
