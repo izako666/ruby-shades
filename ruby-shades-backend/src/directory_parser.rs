@@ -58,9 +58,10 @@ fn explore(base_path: &Path, data: &mut PathObject) {
                     };
                     if entry.path().is_dir() {
                         explore(entry.path().as_path(), &mut dirs);
+                        nested_paths.push(dirs);
+                    } else if entry.path().is_file() && is_video_file(entry.path().as_path()) {
+                        nested_paths.push(dirs);
                     }
-
-                    nested_paths.push(dirs);
                 }
             }
 
@@ -72,5 +73,17 @@ fn explore(base_path: &Path, data: &mut PathObject) {
         Err(error) => {
             panic!("{}", error);
         }
+    }
+}
+
+fn is_video_file(path: &Path) -> bool {
+    if let Some(ext) = path.extension().and_then(|e| e.to_str()) {
+        let ext = ext.to_lowercase();
+        matches!(
+            ext.as_str(),
+            "mp4" | "mkv" | "avi" | "mov" | "flv" | "wmv" | "webm" | "m4v" | "mpeg" | "mpg"
+        )
+    } else {
+        false
     }
 }
