@@ -7,6 +7,7 @@ pub struct Config {
     pub source_dir: String,
     pub address: String,
     pub port: String,
+    pub imdb_auth_token: String,
 }
 
 static CONFIG: Lazy<Mutex<Option<Config>>> = Lazy::new(|| Mutex::new(None));

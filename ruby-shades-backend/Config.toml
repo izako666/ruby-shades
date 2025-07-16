@@ -1,3 +1,4 @@
 source_dir = "/home/izak/Documents/example_folder"
 address = "0.0.0.0"
 port = "8222"
+imdb_auth_token = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYmU0YTkxOTg0NDY3NmFlM2U4Y2ZiMDhiOTRkZTAyZCIsIm5iZiI6MTc1MjY3ODAxMS44OTQsInN1YiI6IjY4NzdiZTdiYzZlZjc3ZGJkMTQzZDJjYyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.R0jt89zD9niLc2efnYu8-pW73VxFNMmy-vlCzVzA2hI"
