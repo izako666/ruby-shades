@@ -1,7 +1,10 @@
 use std::{
     collections::HashMap,
-    fs,
+    convert::Infallible,
+    fs::{self, read_dir},
+    path::Path,
     sync::{Arc, Mutex},
+    time::{Duration, Instant},
 };
 
 use crate::{
@@ -10,11 +13,13 @@ use crate::{
 };
 use axum::{
     Json, Router,
+    body::Body,
     extract::{
-        Query, WebSocketUpgrade,
+        Query, Request, WebSocketUpgrade,
         ws::{Message, Utf8Bytes, WebSocket},
     },
     http::StatusCode,
+    middleware::{self, Next},
     response::{IntoResponse, Response},
     routing::{any, get, get_service},
 };
@@ -26,12 +31,14 @@ use tokio::{
     process::Command,
     sync::mpsc::{UnboundedReceiver, UnboundedSender},
     task,
+    time::sleep,
 };
+use tower::util::ServiceFn;
 use tower_http::services::ServeDir;
 use uuid::Uuid;
 
 //List of clients id's mapped with their users, Mutex for multi-thread nature of websockets.
-type Clients = Lazy<Arc<Mutex<HashMap<String, Option<Vec<UnboundedSender<Message>>>>>>>;
+type Clients = Lazy<Arc<Mutex<HashMap<String, ClientData>>>>;
 static CLIENTS: Clients = Lazy::new(|| Arc::new(Mutex::new(HashMap::new())));
 
 //Status update for websocket
@@ -40,6 +47,20 @@ struct StatusUpdate {
     progress: u8,
     status: String,
     uuid: String,
+}
+
+struct ClientData {
+    messager: Option<Vec<UnboundedSender<Message>>>,
+    time_elapsed: Instant,
+}
+
+impl Default for ClientData {
+    fn default() -> Self {
+        Self {
+            messager: None,
+            time_elapsed: Instant::now(),
+        }
+    }
 }
 //Possible errors for websocket
 enum ServiceErrors {
@@ -62,6 +83,7 @@ pub async fn initialize() {
     let app = Router::new()
         .route("/", get(|| async { "Ruby Shades Backend" }))
         .nest_service("/videos", get_service(ServeDir::new("static/videos")))
+        .route_layer(middleware::from_fn(update_timestamps))
         .route("/watch", get(handle_watch))
         .route("/websocket_metadata", any(ws_handler))
         .route("/directory", get(handle_directory));
@@ -69,10 +91,92 @@ pub async fn initialize() {
     let listener = tokio::net::TcpListener::bind(format!("{}:{}", config.address, config.port))
         .await
         .unwrap();
-
+    task::spawn(start_cleanup_task());
     axum::serve(listener, app).await.unwrap();
 }
 
+pub async fn start_cleanup_task() {
+    let cleanup_interval = Duration::from_secs(600); // Every 10 minutes
+    let max_age = Duration::from_secs(120); // Inactive for over 1 minute
+    let mut stale_uuids: Vec<String>;
+    let mut non_stale_uuids: Vec<String>;
+    loop {
+        sleep(cleanup_interval).await;
+
+        let now = Instant::now();
+
+        let mut clients = CLIENTS.lock().unwrap();
+        {
+            stale_uuids = clients
+                .iter()
+                .filter_map(|(uuid, data)| {
+                    if now.duration_since(data.time_elapsed) > max_age {
+                        Some(uuid.clone())
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+            non_stale_uuids = clients
+                .iter()
+                .filter_map(|(uuid, data)| {
+                    if now.duration_since(data.time_elapsed) < max_age {
+                        Some(uuid.clone())
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+            println!("non_stale_uuids: {:?}", non_stale_uuids);
+            println!("stale_uuids: {:?}", stale_uuids);
+            for uuid in &stale_uuids {
+                clients.remove(uuid);
+            }
+        }
+        let path = Path::new("static/videos");
+        let dir = read_dir(path);
+        if let Ok(dir) = dir {
+            for dir_entry in dir {
+                if let Ok(dir_entry) = dir_entry {
+                    if let Some(uuid) = dir_entry.file_name().to_str() {
+                        if !non_stale_uuids.contains(&String::from(uuid)) {
+                            let path = format!("static/videos/{}", uuid);
+                            if let Err(e) = fs::remove_dir_all(&path) {
+                                eprintln!("Failed to delete directory {}: {}", path, e);
+                            } else {
+                                println!("Deleted directory: {}", path);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+pub async fn update_timestamps(req: Request, next: Next) -> Result<Response, StatusCode> {
+    let req_uri = req.uri();
+    let path = req_uri.path();
+    println!("updating timestamps attempt");
+    println!("path: {}", path);
+    if let Some(start_idx) = path.find("/videos/") {
+        let rest = &path[start_idx + "/videos/".len()..];
+
+        if let Some(end_idx) = rest.find('/') {
+            let uuid = &rest[..end_idx];
+            println!("uuid found: {}", uuid);
+            match CLIENTS.lock().unwrap().get_mut(uuid) {
+                Some(data) => {
+                    println!("updated timestamp for {} now {:?}", uuid, Instant::now());
+                    data.time_elapsed = Instant::now()
+                }
+                None => {}
+            }
+        }
+    }
+    let response = next.run(req).await;
+    return Ok(response);
+}
 //returns bitrate from quality
 fn get_bitrate_from_quality(quality: &str) -> Option<u32> {
     for &(qual, bitrate) in BITRATE_QUALITY_MAP {
@@ -169,7 +273,13 @@ async fn handle_watch(
             }
         });
 
-        CLIENTS.lock().unwrap().insert(uuid_new.to_string(), None);
+        CLIENTS.lock().unwrap().insert(
+            uuid_new.to_string(),
+            ClientData {
+                messager: None,
+                time_elapsed: Instant::now(),
+            },
+        );
         Ok(Json(json!({
             "uuid": uuid_new.to_string(),
             "status": "processing"
@@ -214,22 +324,23 @@ async fn ws_handler(
 async fn handle_socket(socket: WebSocket, uuid: String) {
     let (sender, _receiver) = socket.split();
     let (tx, rx) = tokio::sync::mpsc::unbounded_channel::<Message>();
-    CLIENTS
-        .lock()
-        .unwrap()
-        .entry(uuid.to_string())
-        .or_default()
-        .clone()
-        .unwrap_or(Vec::new())
-        .push(tx.clone());
-
     if !CLIENTS.lock().unwrap().contains_key(&uuid) {
-        CLIENTS.lock().unwrap().insert(uuid, Some(vec![tx.clone()]));
+        CLIENTS.lock().unwrap().insert(
+            uuid,
+            ClientData {
+                messager: Some(vec![tx.clone()]),
+                time_elapsed: Instant::now(),
+            },
+        );
     } else {
         let mut clients = CLIENTS.lock().unwrap();
 
-        if let Some(Some(vec)) = clients.get_mut(&uuid) {
-            vec.push(tx.clone());
+        if let Some(client_data) = clients.get_mut(&uuid) {
+            if let Some(messagers) = client_data.messager.as_mut() {
+                messagers.push(tx.clone());
+            } else {
+                client_data.messager = Some(vec![tx.clone()]);
+            }
         }
     }
     tokio::spawn(write(sender, rx));
@@ -258,8 +369,9 @@ fn notify_clients(uuid: &str, payload: &StatusUpdate) {
     if let Ok(payload_str) = payload_str {
         let payload_bytes = Utf8Bytes::from(payload_str);
         if let Some(subscribers) = clients_map.get_mut(uuid) {
-            if subscribers.is_some() {
+            if subscribers.messager.is_some() {
                 subscribers
+                    .messager
                     .as_mut()
                     .unwrap()
                     .retain(|tx| tx.send(Message::Text(payload_bytes.clone())).is_ok());
