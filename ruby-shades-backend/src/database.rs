@@ -1,5 +1,6 @@
 use std::{error::Error, sync::Arc};
 
+use axum::{Json, response::IntoResponse};
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use sled::{Db, IVec};
@@ -38,6 +39,27 @@ pub struct TvEpisodeMetadata {
     pub description: String,
     pub number: u16,
     pub poster: String,
+}
+
+pub enum Metadata {
+    Show(TvShowMetadata),
+    Movie(MovieMetadata),
+    Episode(TvEpisodeMetadata),
+}
+impl IntoResponse for Metadata {
+    fn into_response(self) -> axum::response::Response {
+        match self {
+            Metadata::Show(data) => {
+                Json(serde_json::json!({ "type": "show", "data": data })).into_response()
+            }
+            Metadata::Movie(data) => {
+                Json(serde_json::json!({ "type": "movie", "data": data })).into_response()
+            }
+            Metadata::Episode(data) => {
+                Json(serde_json::json!({ "type": "episode", "data": data })).into_response()
+            }
+        }
+    }
 }
 
 pub fn import_movie_metadata(
@@ -102,6 +124,16 @@ pub fn get_episode_metadata(
 
     let ep = serde_json::from_slice::<TvEpisodeMetadata>(&vec_data)?;
     Ok(ep)
+}
+
+pub fn get_metadata(local_path: &str) -> Result<Metadata, Box<dyn std::error::Error>> {
+    if get_show_metadata(local_path).is_ok() {
+        return Ok(Metadata::Show(get_show_metadata(local_path).unwrap()));
+    } else if get_movie_metadata(local_path).is_ok() {
+        return Ok(Metadata::Movie(get_movie_metadata(local_path).unwrap()));
+    } else {
+        return Ok(Metadata::Episode(get_episode_metadata(local_path).unwrap()));
+    }
 }
 
 pub fn read_database() {

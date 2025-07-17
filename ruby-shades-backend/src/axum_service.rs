@@ -9,6 +9,7 @@ use std::{
 
 use crate::{
     config::{Config, read_config},
+    database,
     directory_parser::{self, PathObject},
 };
 use axum::{
@@ -34,7 +35,7 @@ use tokio::{
     task,
     time::sleep,
 };
-use tower::util::ServiceFn;
+use tower::{Service, util::ServiceFn};
 use tower_http::services::ServeDir;
 use uuid::Uuid;
 
@@ -87,7 +88,8 @@ pub async fn initialize() {
         .route_layer(middleware::from_fn(update_timestamps))
         .route("/watch", get(handle_watch))
         .route("/websocket_metadata", any(ws_handler))
-        .route("/directory", get(handle_directory));
+        .route("/directory", get(handle_directory))
+        .route("/get_metadata", get(handle_metadata));
     let config: Config = read_config();
     let listener = tokio::net::TcpListener::bind(format!("{}:{}", config.address, config.port))
         .await
@@ -424,4 +426,18 @@ async fn handle_directory() -> Result<Json<PathObject>, ServiceErrors> {
     } else {
         return Err(ServiceErrors::UnknownInternalServer);
     }
+}
+
+async fn handle_metadata(
+    Query(params): Query<HashMap<String, String>>,
+) -> Result<impl IntoResponse, ServiceErrors> {
+    let path = params.get("resource");
+    if let Some(path) = path {
+        let metadata = database::get_metadata(path);
+
+        if let Ok(metadata) = metadata {
+            return Ok(metadata);
+        }
+    }
+    Err(ServiceErrors::BadRequestNoResource)
 }
