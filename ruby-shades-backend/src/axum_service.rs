@@ -28,6 +28,7 @@ use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use tokio::{
+    io::{AsyncBufReadExt, BufReader},
     process::Command,
     sync::mpsc::{UnboundedReceiver, UnboundedSender},
     task,
@@ -80,7 +81,7 @@ static BITRATE_QUALITY_MAP: &[(&str, u32)] = &[
 
 //initializes REST endpoints, websocket endpoints, and serves the server
 pub async fn initialize() {
-    let app = Router::new()
+    let app: Router = Router::new()
         .route("/", get(|| async { "Ruby Shades Backend" }))
         .nest_service("/videos", get_service(ServeDir::new("static/videos")))
         .route_layer(middleware::from_fn(update_timestamps))
@@ -191,12 +192,13 @@ pub async fn convert_video_to_hls(
     input_path: &str,
     output_dir: &str,
     quality: &str,
+    uuid: &str,
 ) -> std::io::Result<()> {
     fs::create_dir_all(output_dir)?; // Ensure output dir exists
     let quality_valid = quality.replace("p", "");
 
     let bitrate: u32 = get_bitrate_from_quality(quality).unwrap_or(400);
-    let status = Command::new("ffmpeg")
+    let mut child = Command::new("ffmpeg")
         .args(&[
             "-i",
             input_path,
@@ -220,10 +222,38 @@ pub async fn convert_video_to_hls(
             "hls",
             &format!("{}/index.m3u8", output_dir),
         ])
-        .status()
-        .await;
+        .stderr(std::process::Stdio::piped()) // ffmpeg logs to stderr
+        .stdout(std::process::Stdio::null()) // don't need stdout
+        .spawn()?;
 
-    if !status.is_ok_and(|f| f.success()) {
+    let stderr = child.stderr.take().unwrap();
+    let reader = BufReader::new(stderr);
+    let mut lines = reader.lines();
+
+    let mut segment_count = 0;
+    const TARGET_SEGMENTS: usize = 3;
+
+    while let Ok(Some(line)) = lines.next_line().await {
+        if line.contains(".ts") && line.contains("Opening") {
+            segment_count += 1;
+            println!("Segment {} created: {}", segment_count, line);
+            if segment_count == TARGET_SEGMENTS {
+                notify_clients(
+                    uuid,
+                    &StatusUpdate {
+                        progress: 10,
+                        status: "READY_TO_STREAM".to_string(),
+                        uuid: uuid.to_string(),
+                    },
+                );
+            }
+        }
+    }
+
+    // Wait for ffmpeg to finish
+    let status = child.wait().await?;
+
+    if !status.success() {
         return Err(std::io::Error::new(
             std::io::ErrorKind::Other,
             "ffmpeg failed",
@@ -248,7 +278,14 @@ async fn handle_watch(
         let output_dir = format!("static/videos/{}/", uuid_new.clone());
         println!("task spawning");
         task::spawn(async move {
-            if let Err(e) = convert_video_to_hls(&path_str, &output_dir, &quality_clone).await {
+            if let Err(e) = convert_video_to_hls(
+                &path_str,
+                &output_dir,
+                &quality_clone,
+                &uuid_new.to_string(),
+            )
+            .await
+            {
                 // Log the error, mark failure somewhere
                 println!("FAILURE: {e}");
 

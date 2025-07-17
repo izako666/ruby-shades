@@ -8,9 +8,9 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct PathObject {
-    path: String,
-    name: String,
-    nested_paths: Vec<PathObject>,
+    pub path: String,
+    pub name: String,
+    pub nested_paths: Vec<PathObject>,
 }
 
 pub static PATH_OBJECT: Lazy<Mutex<Option<PathObject>>> = Lazy::new(|| Mutex::new(None));
@@ -76,7 +76,7 @@ fn explore(base_path: &Path, data: &mut PathObject) {
     }
 }
 
-fn is_video_file(path: &Path) -> bool {
+pub fn is_video_file(path: &Path) -> bool {
     if let Some(ext) = path.extension().and_then(|e| e.to_str()) {
         let ext = ext.to_lowercase();
         matches!(

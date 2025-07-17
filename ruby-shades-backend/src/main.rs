@@ -15,6 +15,12 @@ async fn main() {
     println!("source_dir is {}", config.source_dir);
 
     directory_parser::initialize(&config.source_dir);
+    let path_obj = directory_parser::PATH_OBJECT.lock().unwrap();
+    if let Some(path) = path_obj.clone() {
+        let _ = database::DB.clear();
+
+        let _ = metadata_manager::transcode_path_object(&path, None).await;
+    }
 
     axum_service::initialize().await;
 }
