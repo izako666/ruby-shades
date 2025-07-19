@@ -1,0 +1,11 @@
+/home/izak/Documents/rust-projects/ruby-shades/ruby-shades-frontend/target/debug/deps/gloo_net-e1bfd1aee60d3750.d: /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-net-0.1.0/src/lib.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-net-0.1.0/src/error.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-net-0.1.0/src/http/mod.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-net-0.1.0/src/http/headers.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-net-0.1.0/src/websocket/mod.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-net-0.1.0/src/websocket/events.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-net-0.1.0/src/websocket/futures.rs
+
+/home/izak/Documents/rust-projects/ruby-shades/ruby-shades-frontend/target/debug/deps/libgloo_net-e1bfd1aee60d3750.rmeta: /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-net-0.1.0/src/lib.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-net-0.1.0/src/error.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-net-0.1.0/src/http/mod.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-net-0.1.0/src/http/headers.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-net-0.1.0/src/websocket/mod.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-net-0.1.0/src/websocket/events.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-net-0.1.0/src/websocket/futures.rs
+
+/home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-net-0.1.0/src/lib.rs:
+/home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-net-0.1.0/src/error.rs:
+/home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-net-0.1.0/src/http/mod.rs:
+/home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-net-0.1.0/src/http/headers.rs:
+/home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-net-0.1.0/src/websocket/mod.rs:
+/home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-net-0.1.0/src/websocket/events.rs:
+/home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-net-0.1.0/src/websocket/futures.rs:

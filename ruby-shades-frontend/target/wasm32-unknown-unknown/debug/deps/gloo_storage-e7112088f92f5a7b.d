@@ -1,0 +1,10 @@
+/home/izak/Documents/rust-projects/ruby-shades/ruby-shades-frontend/target/wasm32-unknown-unknown/debug/deps/gloo_storage-e7112088f92f5a7b.d: /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.2.2/src/lib.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.2.2/src/errors.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.2.2/src/local_storage.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.2.2/src/session_storage.rs
+
+/home/izak/Documents/rust-projects/ruby-shades/ruby-shades-frontend/target/wasm32-unknown-unknown/debug/deps/libgloo_storage-e7112088f92f5a7b.rlib: /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.2.2/src/lib.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.2.2/src/errors.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.2.2/src/local_storage.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.2.2/src/session_storage.rs
+
+/home/izak/Documents/rust-projects/ruby-shades/ruby-shades-frontend/target/wasm32-unknown-unknown/debug/deps/libgloo_storage-e7112088f92f5a7b.rmeta: /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.2.2/src/lib.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.2.2/src/errors.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.2.2/src/local_storage.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.2.2/src/session_storage.rs
+
+/home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.2.2/src/lib.rs:
+/home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.2.2/src/errors.rs:
+/home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.2.2/src/local_storage.rs:
+/home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-storage-0.2.2/src/session_storage.rs:

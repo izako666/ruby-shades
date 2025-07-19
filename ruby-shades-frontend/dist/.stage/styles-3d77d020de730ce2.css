@@ -1,0 +1,58 @@
+:root {
+    --text: #c5c5c5;
+    --background: #1d1d1d;
+    --primary: #9B111E;
+    --secondary: #b61424;
+    --accent: #bfbfbf;
+}
+
+@import url('https://fonts.googleapis.com/css?family=Azeret%20Mono:700|Lekton:400');
+
+body {
+    background: var(--background);
+    color: var(--text);
+    font-family: 'Lekton', sans-serif;
+    font-weight: 400;
+    margin: 0;
+    padding: 0;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+    font-family: 'Azeret Mono', monospace;
+    font-weight: 700;
+    margin: 0;
+}
+
+html {
+    font-size: 100%;
+}
+
+/* 16px */
+
+h1 {
+    font-size: 4.210rem;
+}
+
+h2 {
+    font-size: 3.158rem;
+}
+
+h3 {
+    font-size: 2.369rem;
+}
+
+h4 {
+    font-size: 1.777rem;
+}
+
+h5 {
+    font-size: 1.333rem;
+}
+
+small {
+    font-size: 0.750rem;
+}

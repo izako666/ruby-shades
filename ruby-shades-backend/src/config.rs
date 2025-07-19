@@ -8,6 +8,7 @@ pub struct Config {
     pub address: String,
     pub port: String,
     pub tmdb_auth_token: String,
+    pub frontend_url: String,
 }
 
 static CONFIG: Lazy<Mutex<Option<Config>>> = Lazy::new(|| Mutex::new(None));

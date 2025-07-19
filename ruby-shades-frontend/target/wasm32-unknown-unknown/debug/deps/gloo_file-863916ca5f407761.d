@@ -1,0 +1,11 @@
+/home/izak/Documents/rust-projects/ruby-shades/ruby-shades-frontend/target/wasm32-unknown-unknown/debug/deps/gloo_file-863916ca5f407761.d: /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-file-0.2.3/src/lib.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-file-0.2.3/src/blob.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-file-0.2.3/src/file_list.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-file-0.2.3/src/file_reader.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-file-0.2.3/src/object_url.rs
+
+/home/izak/Documents/rust-projects/ruby-shades/ruby-shades-frontend/target/wasm32-unknown-unknown/debug/deps/libgloo_file-863916ca5f407761.rlib: /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-file-0.2.3/src/lib.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-file-0.2.3/src/blob.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-file-0.2.3/src/file_list.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-file-0.2.3/src/file_reader.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-file-0.2.3/src/object_url.rs
+
+/home/izak/Documents/rust-projects/ruby-shades/ruby-shades-frontend/target/wasm32-unknown-unknown/debug/deps/libgloo_file-863916ca5f407761.rmeta: /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-file-0.2.3/src/lib.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-file-0.2.3/src/blob.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-file-0.2.3/src/file_list.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-file-0.2.3/src/file_reader.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-file-0.2.3/src/object_url.rs
+
+/home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-file-0.2.3/src/lib.rs:
+/home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-file-0.2.3/src/blob.rs:
+/home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-file-0.2.3/src/file_list.rs:
+/home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-file-0.2.3/src/file_reader.rs:
+/home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-file-0.2.3/src/object_url.rs:

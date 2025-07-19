@@ -1,4 +1,4 @@
-use std::{error::Error, sync::Arc};
+use std::{collections::HashMap, error::Error, sync::Arc};
 
 use axum::{Json, response::IntoResponse};
 use once_cell::sync::Lazy;
@@ -41,6 +41,7 @@ pub struct TvEpisodeMetadata {
     pub poster: String,
 }
 
+#[derive(Serialize, Deserialize)]
 pub enum Metadata {
     Show(TvShowMetadata),
     Movie(MovieMetadata),
@@ -136,31 +137,38 @@ pub fn get_metadata(local_path: &str) -> Result<Metadata, Box<dyn std::error::Er
     }
 }
 
-pub fn read_database() {
-    println!("reading database");
+pub fn read_database() -> HashMap<String, Metadata> {
+    let mut map: HashMap<String, Metadata> = HashMap::new();
+
     for entry in DB.iter() {
         match entry {
             Ok((key, value)) => {
                 let key_str = String::from_utf8_lossy(&key);
-                println!("🔑 Key: {}", key_str);
-                // Try Show
+
+                // Try deserializing TvShowMetadata
                 if let Ok(show) = serde_json::from_slice::<TvShowMetadata>(&value) {
-                    println!("📺 TvShowMetadata:\n{:?}\n", show);
-                    continue;
+                    if !show.seasons.is_empty() {
+                        map.insert(key_str.to_string(), Metadata::Show(show));
+                        continue;
+                    }
                 }
-                // Try Movie
+
+                // Try deserializing MovieMetadata
                 if let Ok(movie) = serde_json::from_slice::<MovieMetadata>(&value) {
-                    println!("🎬 MovieMetadata:\n{:?}\n", movie);
-                    continue;
+                    if movie.name.len() > 0 && movie.description.len() > 0 {
+                        map.insert(key_str.to_string(), Metadata::Movie(movie));
+                        continue;
+                    }
                 }
 
-                // Try Episode
+                // Try deserializing TvEpisodeMetadata
                 if let Ok(episode) = serde_json::from_slice::<TvEpisodeMetadata>(&value) {
-                    println!("📼 TvEpisodeMetadata:\n{:?}\n", episode);
-                    continue;
+                    if episode.number > 0 {
+                        map.insert(key_str.to_string(), Metadata::Episode(episode));
+                        continue;
+                    }
                 }
 
-                // Unknown type
                 println!("❓ Unknown format or corrupt data.\n");
             }
             Err(e) => {
@@ -168,4 +176,5 @@ pub fn read_database() {
             }
         }
     }
+    return map;
 }

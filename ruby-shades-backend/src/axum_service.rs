@@ -19,7 +19,7 @@ use axum::{
         Query, Request, WebSocketUpgrade,
         ws::{Message, Utf8Bytes, WebSocket},
     },
-    http::StatusCode,
+    http::{HeaderValue, StatusCode},
     middleware::{self, Next},
     response::{IntoResponse, Response},
     routing::{any, get, get_service},
@@ -36,6 +36,7 @@ use tokio::{
     time::sleep,
 };
 use tower::{Service, util::ServiceFn};
+use tower_http::cors::{AllowOrigin, Any, CorsLayer};
 use tower_http::services::ServeDir;
 use uuid::Uuid;
 
@@ -70,6 +71,11 @@ enum ServiceErrors {
     UnknownInternalServer,
 }
 
+#[derive(Serialize)]
+pub struct MetadataResponse {
+    pub metadata: HashMap<String, database::Metadata>,
+}
+
 //quality mapping bitrate and quality options, might be inaccurate
 static BITRATE_QUALITY_MAP: &[(&str, u32)] = &[
     ("1440p", 8000),
@@ -82,6 +88,15 @@ static BITRATE_QUALITY_MAP: &[(&str, u32)] = &[
 
 //initializes REST endpoints, websocket endpoints, and serves the server
 pub async fn initialize() {
+    let origin_str = read_config().frontend_url;
+    let header_value = HeaderValue::from_str(&origin_str)
+        .unwrap_or_else(|e| panic!("Invalid frontend_url for CORS: {:?} - {}", origin_str, e));
+
+    let cors = CorsLayer::new()
+        .allow_origin(header_value)
+        .allow_methods(Any)
+        .allow_headers(Any);
+
     let app: Router = Router::new()
         .route("/", get(|| async { "Ruby Shades Backend" }))
         .nest_service("/videos", get_service(ServeDir::new("static/videos")))
@@ -89,7 +104,9 @@ pub async fn initialize() {
         .route("/watch", get(handle_watch))
         .route("/websocket_metadata", any(ws_handler))
         .route("/directory", get(handle_directory))
-        .route("/get_metadata", get(handle_metadata));
+        .route("/get_metadata", get(handle_metadata))
+        .route("/get_all_metadata", get(handle_all_metadata))
+        .layer(cors);
     let config: Config = read_config();
     let listener = tokio::net::TcpListener::bind(format!("{}:{}", config.address, config.port))
         .await
@@ -440,4 +457,18 @@ async fn handle_metadata(
         }
     }
     Err(ServiceErrors::BadRequestNoResource)
+}
+
+async fn handle_all_metadata() -> Result<impl IntoResponse, ServiceErrors> {
+    let all_metadata = database::read_database();
+
+    if all_metadata.is_empty() {
+        return Err(ServiceErrors::BadRequestNoResource);
+    }
+
+    let response = MetadataResponse {
+        metadata: all_metadata,
+    };
+
+    Ok(Json(response))
 }

@@ -1,0 +1,10 @@
+/home/izak/Documents/rust-projects/ruby-shades/ruby-shades-frontend/target/debug/deps/gloo_console-9c5d9c855cd6bc82.d: /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-console-0.3.0/src/lib.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-console-0.3.0/src/console_dbg.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-console-0.3.0/src/counter.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-console-0.3.0/src/externs.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-console-0.3.0/src/macros.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-console-0.3.0/src/timer.rs
+
+/home/izak/Documents/rust-projects/ruby-shades/ruby-shades-frontend/target/debug/deps/libgloo_console-9c5d9c855cd6bc82.rmeta: /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-console-0.3.0/src/lib.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-console-0.3.0/src/console_dbg.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-console-0.3.0/src/counter.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-console-0.3.0/src/externs.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-console-0.3.0/src/macros.rs /home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-console-0.3.0/src/timer.rs
+
+/home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-console-0.3.0/src/lib.rs:
+/home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-console-0.3.0/src/console_dbg.rs:
+/home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-console-0.3.0/src/counter.rs:
+/home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-console-0.3.0/src/externs.rs:
+/home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-console-0.3.0/src/macros.rs:
+/home/izak/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gloo-console-0.3.0/src/timer.rs:
