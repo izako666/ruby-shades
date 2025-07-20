@@ -1,0 +1,1 @@
+&std::string::String: IntoPropValue<std::option::Option<implicit_clone::unsync::string::IString>>

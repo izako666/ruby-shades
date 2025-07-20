@@ -6,14 +6,15 @@
     <title>Ruby Shades</title>
     <link rel="stylesheet" href="/styles-3d77d020de730ce2.css" integrity="sha384-13QjbvpBYrROq3MoASqttvfHPmpw5LnrZXN6Yi2JDrC7v+lMS+K8/XwXk3dU4wh+"/>
     
-<link rel="modulepreload" href="/ruby-shades-frontend-4979b163eb07d990.js" crossorigin="anonymous" integrity="sha384-5ZXRWosJsEMd7L3XJgCSzqLk0mvG36lrRIZpQu+Tyqp0D6GuSJMjPt9qUYaPl+LV"><link rel="preload" href="/ruby-shades-frontend-4979b163eb07d990_bg.wasm" crossorigin="anonymous" integrity="sha384-krtDMc7oN0eceMjonp5hqb3lPLOBLkFlsUhbt7UuaDkAK1ufOwKLDM71jWTXDWLQ" as="fetch" type="application/wasm"></head>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<link rel="modulepreload" href="/ruby-shades-frontend-39dbc306c83e1edc.js" crossorigin="anonymous" integrity="sha384-Qmnt+p0Sb4AfaDGFb5o42Q6dVDCSPQhuyA8trWG/vvWVezh3EQC6ybBVxL5gJu6u"><link rel="modulepreload" href="/snippets/ruby-shades-frontend-686458908120144e/inline0.js" crossorigin="anonymous" integrity="sha384-mn8DNdSzird8i0R6wakEi8sUNkaB6ipyKQ+zaKpAP13dMUhDUoMk9TUCwvU+Of+K"><link rel="preload" href="/ruby-shades-frontend-39dbc306c83e1edc_bg.wasm" crossorigin="anonymous" integrity="sha384-0LZbWEsGs7fkGU3qj8DgD/+mcSyTRSqcnd56qyIVP4C6zwwmAOqBy5PThqZRT9z0" as="fetch" type="application/wasm"></head>
 
 <body>
     <div id="root"></div>
 
 <script type="module">
-import init, * as bindings from '/ruby-shades-frontend-4979b163eb07d990.js';
-const wasm = await init({ module_or_path: '/ruby-shades-frontend-4979b163eb07d990_bg.wasm' });
+import init, * as bindings from '/ruby-shades-frontend-39dbc306c83e1edc.js';
+const wasm = await init({ module_or_path: '/ruby-shades-frontend-39dbc306c83e1edc_bg.wasm' });
 
 
 window.wasmBindings = bindings;

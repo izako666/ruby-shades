@@ -17,10 +17,13 @@ mod backend_handler;
 mod components;
 mod config;
 mod pages;
+mod video_player;
 #[derive(Clone, Routable, PartialEq)]
 enum Route {
     #[at("/")]
-    Home,
+    HomeBase,
+    #[at("/*path")]
+    Home { path: String },
     #[not_found]
     #[at("/404")]
     NotFound,
@@ -34,7 +37,8 @@ pub struct MetadataContext(pub UseStateHandle<Option<Rc<MetadataResponse>>>);
 
 fn switch(routes: Route) -> Html {
     match routes {
-        Route::Home => html! { <Home/> },
+        Route::HomeBase => html! {<Home path={"".to_string()}/>},
+        Route::Home { path } => html! { <Home path={path}/> },
 
         Route::NotFound => html! { <h1>{ "404" }</h1> },
     }
@@ -121,5 +125,6 @@ fn App() -> Html {
     }
 }
 fn main() {
+    wasm_logger::init(wasm_logger::Config::default());
     yew::Renderer::<App>::new().render();
 }

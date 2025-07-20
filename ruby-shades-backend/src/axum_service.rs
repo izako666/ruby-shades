@@ -338,7 +338,7 @@ async fn handle_watch(
         );
         Ok(Json(json!({
             "uuid": uuid_new.to_string(),
-            "status": "processing"
+            "status": "PROCESSING"
         })))
     } else {
         println!("Error bad request");

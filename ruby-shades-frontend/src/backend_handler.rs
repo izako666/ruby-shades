@@ -21,7 +21,7 @@ pub enum Metadata {
     Episode(TvEpisodeMetadata),
 }
 
-#[derive(Serialize, Deserialize, PartialEq)]
+#[derive(Serialize, Deserialize, PartialEq, Clone)]
 pub struct MovieMetadata {
     pub name: String,
     pub description: String,
@@ -55,18 +55,18 @@ pub struct TvEpisodeMetadata {
 //Status update for websocket
 #[derive(Deserialize, Serialize)]
 pub struct StatusUpdate {
-    progress: u8,
-    status: String,
-    uuid: String,
+    pub progress: u8,
+    pub status: String,
+    pub uuid: String,
 }
 
 #[derive(Deserialize, Serialize)]
 pub struct WatchResult {
-    uuid: String,
-    status: String,
+    pub uuid: String,
+    pub status: String,
 }
 
-#[derive(Clone, Deserialize, Serialize, PartialEq)]
+#[derive(Clone, Deserialize, Serialize, PartialEq, Debug)]
 pub struct PathObject {
     pub path: String,
     pub name: String,

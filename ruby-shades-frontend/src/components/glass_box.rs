@@ -1,4 +1,3 @@
-use web_sys::wasm_bindgen::prelude::Closure;
 use yew::prelude::*;
 
 #[derive(Properties, PartialEq)]
