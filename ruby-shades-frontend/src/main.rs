@@ -10,7 +10,7 @@ use yew_router::{BrowserRouter, Routable, Switch};
 use crate::{
     backend_handler::{MetadataResponse, PathObject, get_all_metadata, get_directory},
     config::load_config,
-    pages::home::Home,
+    pages::{home::Home, watch::VideoPlayer},
 };
 
 mod backend_handler;
@@ -24,6 +24,8 @@ enum Route {
     HomeBase,
     #[at("/*path")]
     Home { path: String },
+    #[at("/watch")]
+    Watch,
     #[not_found]
     #[at("/404")]
     NotFound,
@@ -39,8 +41,8 @@ fn switch(routes: Route) -> Html {
     match routes {
         Route::HomeBase => html! {<Home path={"".to_string()}/>},
         Route::Home { path } => html! { <Home path={path}/> },
-
         Route::NotFound => html! { <h1>{ "404" }</h1> },
+        Route::Watch => html!( <VideoPlayer />),
     }
 }
 

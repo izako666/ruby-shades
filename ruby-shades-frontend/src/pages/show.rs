@@ -4,9 +4,10 @@ use yew::{
     Callback, Html, Properties, function_component, html, use_context, use_state,
     virtual_dom::VNode,
 };
+use yew_router::hooks::use_navigator;
 
 use crate::{
-    MetadataContext,
+    MetadataContext, Route,
     backend_handler::{Metadata, MetadataResponse, PathObject, TvShowMetadata},
     components::loading_indicator::LoadingIndicator,
     pages::tmdb_image_url,
@@ -24,6 +25,7 @@ struct Episode {
     name: String,
     poster: String,
     description: String,
+    path: String,
 }
 
 #[derive(Clone)]
@@ -36,7 +38,7 @@ struct Season {
 pub fn show(props: &TvShowProps) -> Html {
     let metadata_context =
         use_context::<MetadataContext>().expect("metadata context should exist at this stage");
-
+    let navigator = use_navigator().unwrap();
     if metadata_context.0.is_none() {
         return html!(
             <>
@@ -86,6 +88,7 @@ pub fn show(props: &TvShowProps) -> Html {
                 current_season.set(cloned_season.clone());
             })
         };
+
         let cloned_season = season.clone();
         html! {
             <li
@@ -113,12 +116,12 @@ pub fn show(props: &TvShowProps) -> Html {
             </div>
 
             // Poster + Title + Description
-            <div style="display: flex; flex-direction: row; padding: 2rem; gap: 2rem; margin-top: -300px; align-items: flex-start; z-index: 1; position: relative;">
+            <div style="display: flex; flex-direction: row; padding: 2rem; gap: 2rem; margin-top: 0; align-items: flex-start; z-index: 1; position: relative;">
                 // Poster
                 <img
                     src={tmdb_image_url(&props.metadata.poster)}
                     alt="poster"
-                    style="width: 300px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.6); z-index: 2;"
+                    style="width: 300px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.6); z-index: 2; margin-top: -300px;"
                 />
 
                 // Title + Description
@@ -144,9 +147,19 @@ pub fn show(props: &TvShowProps) -> Html {
                 // Episodes grid
                 <div style="flex-grow: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem;">
                     {
+
                         for current_season.episodes.iter().map(|ep| {
+                            let on_click_episode = {
+                                let episode = ep.clone();
+                                let navigator = navigator.clone();
+
+                                Callback::from(move |_| {
+                                    navigator.push_with_query(&Route::Watch, &[("resource", episode.path.clone())]).unwrap();
+                                })
+                            };
+
                             html! {
-                                <div style="border-radius: 10px; overflow: hidden; background-color: var(--surface); box-shadow: 0 4px 12px rgba(0,0,0,0.2); transition: transform 0.2s ease-in-out; cursor: pointer; min-height: 400px; display: flex; flex-direction: column;">
+                                <div onclick={on_click_episode} style="border-radius: 10px; overflow: hidden; background-color: var(--surface); box-shadow: 0 4px 12px rgba(0,0,0,0.2); transition: transform 0.2s ease-in-out; cursor: pointer; min-height: 400px; display: flex; flex-direction: column;">
                                     <img src={tmdb_image_url(&ep.poster)} alt={ep.name.clone()} style="width: 100%; height: auto;" />
                                     <div style="padding: 1rem; flex: 1; display: flex; flex-direction: column;">
                                         <h4 style="margin: 0 0 0.5rem 0; font-size: 1.2rem; color: var(--text);">{ &ep.name }</h4>
@@ -161,6 +174,7 @@ pub fn show(props: &TvShowProps) -> Html {
                     }
                 </div>
             </div>
+
             <div style="height: 300px;"></div>
         </div>
     }
@@ -200,6 +214,7 @@ fn traverse_path_for_episodes(
                         name: ep.name.to_string(),
                         poster: ep.poster.to_string(),
                         description: ep.description.to_string(),
+                        path: item.path,
                     };
                     episodes.push(new_episode);
                 }

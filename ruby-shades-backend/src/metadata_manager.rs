@@ -210,6 +210,7 @@ pub async fn transcode_path_object(
                     .unwrap_or(season_number.unwrap_or(1).into());
 
                 let query_name = extract_clean_name(&path_obj.name);
+                println!("searching show with: {}", query_name);
                 let search_obj = search_tmdb_tv(&query_name).await;
                 if let Ok(Some(search_obj)) = search_obj {
                     let season_details =
@@ -235,6 +236,8 @@ pub async fn transcode_path_object(
             }
         } else {
             let query_movie_name = extract_clean_name(&path_obj.name);
+            println!("searching movie with: {}", query_movie_name);
+
             let search_movie = search_tmdb_movie(&query_movie_name).await;
             if let Ok(Some(search_movie)) = search_movie {
                 let movie_details = fetch_movie_details(search_movie.id).await;
@@ -263,6 +266,8 @@ pub async fn transcode_path_object(
                         let file_name_str = file_name.to_str();
                         if let Some(file_name_str) = file_name_str {
                             let show_query = extract_clean_name(&file_name_str);
+                            println!("searching show with: {}", show_query);
+
                             let show_search = search_tmdb_tv(&show_query).await;
                             if let Ok(Some(show_search)) = show_search {
                                 let show_details = fetch_tv_series_details(show_search.id).await;
@@ -360,27 +365,34 @@ fn extract_clean_name(name: &str) -> String {
 
     let mut cleaned = name.to_string();
 
-    // Remove file extension early
     if let Some(pos) = cleaned.rfind('.') {
         cleaned.truncate(pos);
     }
 
-    // Remove season + episode tags
+    let re_brackets = Regex::new(r"[\[\(][^\[\]\(\)]+[\]\)]").unwrap();
+    cleaned = re_brackets.replace_all(&cleaned, "").to_string();
+
     let re_tags =
         Regex::new(r"(?i)(s\d{1,2}e\d{1,2}|season\d{1,2}episode\d{1,2}|e\d{1,2}|episode\d{1,2})")
             .unwrap();
     cleaned = re_tags.replace_all(&cleaned, "").to_string();
 
-    // Remove resolution info
     let re_resolution = Regex::new(r"(?i)(720p|1080p|2160p|480p|4k|8k|hd|uhd)").unwrap();
     cleaned = re_resolution.replace_all(&cleaned, "").to_string();
 
-    // Remove codec info
     let re_codec =
         Regex::new(r"(?i)(x264|x265|h\.?264|h\.?265|hevc|aac|ddp|dts|bluray|webrip|hdr)").unwrap();
     cleaned = re_codec.replace_all(&cleaned, "").to_string();
 
-    // Final cleanup: replace punctuation with spaces, collapse multiple spaces, trim
+    let re_year = Regex::new(r"\b(19|20)\d{2}\b").unwrap();
+    cleaned = re_year.replace_all(&cleaned, "").to_string();
+
+    let re_groups = Regex::new(
+        r"(?i)\b(yify|rarbg|ettv|evo|amzn|nf|web\-?dl|b[dr]rip|dvdrip|hdtv|cam|ts|tc)\b",
+    )
+    .unwrap();
+    cleaned = re_groups.replace_all(&cleaned, "").to_string();
+
     cleaned = cleaned
         .replace(['_', '.', '-'], " ")
         .split_whitespace()

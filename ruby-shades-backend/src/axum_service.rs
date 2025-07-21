@@ -26,6 +26,7 @@ use axum::{
 };
 use futures_util::{SinkExt, StreamExt, stream::SplitSink};
 use once_cell::sync::Lazy;
+use reqwest::header::CONTENT_TYPE;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use tokio::{
@@ -99,7 +100,11 @@ pub async fn initialize() {
 
     let app: Router = Router::new()
         .route("/", get(|| async { "Ruby Shades Backend" }))
-        .nest_service("/videos", get_service(ServeDir::new("static/videos")))
+        .nest_service(
+            "/videos",
+            get_service(ServeDir::new("static/videos"))
+                .route_layer(middleware::from_fn(fix_hls_content_type)),
+        )
         .route_layer(middleware::from_fn(update_timestamps))
         .route("/watch", get(handle_watch))
         .route("/websocket_metadata", any(ws_handler))
@@ -197,6 +202,28 @@ pub async fn update_timestamps(req: Request, next: Next) -> Result<Response, Sta
     let response = next.run(req).await;
     return Ok(response);
 }
+
+pub async fn fix_hls_content_type(req: Request, next: Next) -> Result<Response, StatusCode> {
+    let path = req.uri().path().to_string();
+
+    let mut response = next.run(req).await;
+
+    if response.status() == StatusCode::OK {
+        if path.ends_with(".m3u8") {
+            response.headers_mut().insert(
+                CONTENT_TYPE,
+                "application/vnd.apple.mpegurl".parse().unwrap(),
+            );
+        } else if path.ends_with(".ts") {
+            response
+                .headers_mut()
+                .insert(CONTENT_TYPE, "video/MP2T".parse().unwrap());
+        }
+    }
+
+    Ok(response)
+}
+
 //returns bitrate from quality
 fn get_bitrate_from_quality(quality: &str) -> Option<u32> {
     for &(qual, bitrate) in BITRATE_QUALITY_MAP {
@@ -217,18 +244,24 @@ pub async fn convert_video_to_hls(
     let quality_valid = quality.replace("p", "");
 
     let bitrate: u32 = get_bitrate_from_quality(quality).unwrap_or(400);
+
     let mut child = Command::new("ffmpeg")
         .args(&[
             "-i",
-            input_path,
+            &format!("file:{}", input_path),
             "-c:v",
             "libx264",
+            "-pix_fmt",
+            "yuv420p",
             "-profile:v",
-            "baseline",
-            "-vf",
-            &format!("scale=trunc(iw*{}/ih/2)*2:{}", quality_valid, quality_valid),
+            "high",
             "-level",
-            "3.0",
+            "4.0",
+            "-vf",
+            &format!(
+                "subtitles='{}',scale=trunc(iw*{}/ih/2)*2:{}",
+                input_path, quality_valid, quality_valid
+            ),
             "-start_number",
             "0",
             "-hls_time",
@@ -241,8 +274,8 @@ pub async fn convert_video_to_hls(
             "hls",
             &format!("{}/index.m3u8", output_dir),
         ])
-        .stderr(std::process::Stdio::piped()) // ffmpeg logs to stderr
-        .stdout(std::process::Stdio::null()) // don't need stdout
+        .stderr(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::null())
         .spawn()?;
 
     let stderr = child.stderr.take().unwrap();
@@ -253,6 +286,7 @@ pub async fn convert_video_to_hls(
     const TARGET_SEGMENTS: usize = 3;
 
     while let Ok(Some(line)) = lines.next_line().await {
+        println!("{}", line);
         if line.contains(".ts") && line.contains("Opening") {
             segment_count += 1;
             println!("Segment {} created: {}", segment_count, line);
@@ -269,10 +303,10 @@ pub async fn convert_video_to_hls(
         }
     }
 
-    // Wait for ffmpeg to finish
     let status = child.wait().await?;
 
     if !status.success() {
+        println!("{:?}", status);
         return Err(std::io::Error::new(
             std::io::ErrorKind::Other,
             "ffmpeg failed",
