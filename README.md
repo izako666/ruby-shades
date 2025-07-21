@@ -58,3 +58,6 @@ trunk serve
 
 License
 
+This project is under the MIT license. 
+https://opensource.org/license/mit
+
